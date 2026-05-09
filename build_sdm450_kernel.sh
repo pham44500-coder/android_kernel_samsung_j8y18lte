@@ -27,7 +27,7 @@ BUILD_ROOT_DIR=$BUILD_KERNEL_DIR/../..
 BUILD_KERNEL_OUT_DIR=$PRODUCT_OUT/obj/KERNEL_OBJ
 
 SECURE_SCRIPT=$BUILD_ROOT_DIR/buildscript/tools/signclient.jar
-BUILD_CROSS_COMPILE=$BUILD_ROOT_DIR/android/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+BUILD_CROSS_COMPILE=/home/gold/Android/lineage-17.1/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
 
 KERNEL_DEFCONFIG=sdm450_sec_defconfig
