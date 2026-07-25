@@ -6,34 +6,41 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04   # Dùng Ubuntu 20.04 để tránh lỗi GCC Host Compiler quá mới
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Source Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Build Environment
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential bc bison flex libssl-dev libncurses5-dev libncursesw5-dev libglib2.0-dev git
+        sudo apt-get install -y build-essential bc bison flex libssl-dev libncurses5-dev libncursesw5-dev libglib2.0-dev git ccache libssl-dev libelf-dev
 
-    - name: Download Toolchain GCC 4.9
+    - name: Download Toolchains (GCC 64 & 32)
       run: |
-        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 toolchain
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 toolchain_64
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 toolchain_32
 
     - name: Compile Kernel
       run: |
         export ARCH=arm64
         export SUBARCH=arm64
-        export CROSS_COMPILE=$(pwd)/toolchain/bin/aarch64-linux-android-
-        export KCFLAGS="-w"
-        export KCPPFLAGS="-w"
+        export CROSS_COMPILE=$(pwd)/toolchain_64/bin/aarch64-linux-android-
+        export CROSS_COMPILE_ARM32=$(pwd)/toolchain_32/bin/arm-linux-androideabi-
         
+        # Bỏ qua warning gây dừng build
+        export KCFLAGS="-w -Wno-error"
+        export KCPPFLAGS="-w -Wno-error"
+
         make O=out j8y18lte_defconfig
-        make -j$(nproc) O=out HOSTCC=gcc-9 KCFLAGS="-w"
+        make -j$(nproc) O=out KCFLAGS="-w -Wno-error" KCPPFLAGS="-w -Wno-error"
 
     - name: Upload Kernel Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
+      with:
+        name: Compiled-Kernel-J8-Safe
+        path: out/arch/arm64/boot/Image.gz-dtb
       with:
         name: Compiled-Kernel-J8-Safe
         path: out/arch/arm64/boot/Image.gz-dtb
