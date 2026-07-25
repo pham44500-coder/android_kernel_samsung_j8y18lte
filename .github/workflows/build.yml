@@ -1,7 +1,8 @@
 name: Safe Build Kernel Droidspaces J8
 
 on:
-  workflow_dispatch: # Cho phép bật nút chạy thủ công
+  push:                # Tự động kích hoạt Build ngay khi lưu file
+  workflow_dispatch:   # Nút bấm thủ công
 
 jobs:
   build:
@@ -33,3 +34,4 @@ jobs:
       with:
         name: Compiled-Kernel-J8-Safe
         path: arch/arm64/boot/Image.gz-dtb
+        
