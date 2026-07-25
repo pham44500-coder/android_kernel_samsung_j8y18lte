@@ -1,0 +1,35 @@
+name: Safe Build Kernel Droidspaces J8
+
+on:
+  workflow_dispatch: # Cho phép bật nút chạy thủ công
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
+
+    - name: Setup Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential bc bison flex libssl-dev libncurses5-dev libncursesw5-dev libglib2.0-dev git
+
+    - name: Download Toolchain GCC 4.9
+      run: |
+        git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 toolchain
+
+    - name: Compile Kernel
+      run: |
+        export ARCH=arm64
+        export SUBARCH=arm64
+        export CROSS_COMPILE=$(pwd)/toolchain/bin/aarch64-linux-android-
+        make j8y18lte_defconfig
+        make -j$(nproc)
+
+    - name: Upload Kernel Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Compiled-Kernel-J8-Safe
+        path: arch/arm64/boot/Image.gz-dtb
