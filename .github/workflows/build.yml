@@ -1,16 +1,16 @@
 name: Safe Build Kernel Droidspaces J8
 
 on:
-  push:                # Tự động kích hoạt Build khi lưu file
-  workflow_dispatch:   # Nút bấm thủ công
+  push:
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest    # Dùng máy chủ Ubuntu mới nhất để tránh bị kẹt Queued
+    runs-on: ubuntu-20.04   # Dùng Ubuntu 20.04 để tránh lỗi GCC Host Compiler quá mới
 
     steps:
     - name: Checkout Source Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Setup Build Environment
       run: |
@@ -26,11 +26,14 @@ jobs:
         export ARCH=arm64
         export SUBARCH=arm64
         export CROSS_COMPILE=$(pwd)/toolchain/bin/aarch64-linux-android-
-        make j8y18lte_defconfig
-        make -j$(nproc)
+        export KCFLAGS="-w"
+        export KCPPFLAGS="-w"
+        
+        make O=out j8y18lte_defconfig
+        make -j$(nproc) O=out HOSTCC=gcc-9 KCFLAGS="-w"
 
     - name: Upload Kernel Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: Compiled-Kernel-J8-Safe
-        path: arch/arm64/boot/Image.gz-dtb
+        path: out/arch/arm64/boot/Image.gz-dtb
